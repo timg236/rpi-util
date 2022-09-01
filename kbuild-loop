@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# Build the kernel in a loop as a stress test
+
+set -e
+JOBS=${JOBS:-1}
+
+sudo apt install -y git bc bison flex libssl-dev make
+
+cd ${HOME}
+if [ ! -d kbuild ]; then
+   git clone --depth=1 --branch rpi-5.15.y https://github.com/raspberrypi/linux kbuild
+fi
+
+count=0
+while true; do
+   cd ${HOME}/kbuild
+   git clean -fdx
+   KERNEL=kernel8
+   make bcm2711_defconfig
+   time make -j${JOBS} zImage modules dtbs
+   echo "${count}" >> "${HOME}/kbuild-count"
+   count=$((count + 1))
+done

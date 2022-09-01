@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if ! grep -q "USER PREFS" "$HOME/.bashrc"; then
+   echo 0 > "$HOME/reboot-count"
+
+cat <<EOF >> "${HOME}/.bashrc"
+#USER PREFS
+export EDITOR=vim
+export PATH=\${PATH}:\${HOME}/bin
+alias s='git status'
+alias vl='sudo \${HOME}/bin/videocore-log'
+alias ee='sudo -E rpi-eeprom-config --edit'
+EOF
+fi
+

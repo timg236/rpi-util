@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# 2711 - Uses the HDMI PHY measurement register to get the current pixel clock frequency
+# This will hang if the HDMI PHY is powered of and unclocked
+
+sudo busybox devmem 0xfef00400 32 0x2 
+
+# Enable PIXEL_CLK/2 measurement
+sudo busybox devmem 0xfef00400 32 0x1 
+# Wait a bit
+echo "Measuring.."
+sleep 4
+
+clk=$(sudo busybox devmem 0xfef00404 | sed s/0x//)
+clk=$(echo "obase=10; ibase=16; $clk" | bc)
+clk=$((clk * 2))
+echo "HDMI0: pixel clock $clk HZ"

@@ -1,0 +1,265 @@
+#!/usr/bin/env python3
+
+# Author: Tim Gover
+# Example code for parsing the Raspberry Firmware log buffer
+# This uses the new device-tree "chosen" node to obtain the address of the firmware log
+# buffer instead of the more complex (and deprecated) method used by vcdbg.
+
+import argparse
+import mmap
+import os
+import re
+import struct
+import sys
+
+DEBUG = False
+def debug(s):
+    if DEBUG:
+        sys.stderr.write(s + '\n')
+
+class EndOfFifoException(Exception):
+    # Used to bail out of the FIFO parsing loop when the end or corrupted data is encountered.
+    def __init__(self):
+        pass
+
+class VideoCoreLogParser:
+    def __init__(self, log_buffer, log_start, log_size, asrt=False, msg=False):
+        self.common_header = {}
+        self.common_header_len = 32
+        self.log_descriptor_len = 8
+        self.msg_fifo = {}
+        self.asrt_fifo = {}
+        self.display_assert = asrt
+        self.display_msg = msg
+        self.log_buffer = log_buffer
+        self.log_start = log_start
+        self.log_size = log_size
+        self.parse_headers()
+
+    def cstr(self, offset, length, buf=None):
+        if buf is None:
+            buf = self.log_buffer
+        return struct.unpack_from("%ds" % (length), buf, offset)[0].decode(errors='ignore')
+
+    def u32(self, offset, buf=None):
+        if buf is None:
+            buf = self.log_buffer
+        return struct.unpack_from('<I', buf, offset)[0]
+
+    def u16(self, offset, buf=None):
+        if buf is None:
+            buf = self.log_buffer
+        return struct.unpack_from('<H', buf, offset)[0]
+
+    def vc_ptr(self, offset, buf=None):
+        return self.u32(offset, buf) & ~0xc0000000
+
+    def parse_fifo_log_header(self, ptr):
+        offset = self.log_offset(ptr)
+        log_fifo = {}
+        log_fifo['name'] = self.cstr(offset + 0, 4)
+        log_fifo['start'] = self.vc_ptr(offset + 0x4)
+        log_fifo['end'] = self.vc_ptr(offset + 0x8)
+        log_fifo['wr_ptr'] = self.vc_ptr(offset + 0xc)
+        log_fifo['first_msg'] = self.vc_ptr(offset + 0x10)
+        log_fifo['rd_ptr'] = log_fifo['first_msg']
+        debug(str(log_fifo))
+        return log_fifo
+
+    def parse_log_descriptor(self, offset):
+        debug("parse_log_descriptor %u" % offset)
+        log_type = self.u32(offset) & 0xff
+        ptr = self.vc_ptr(offset + 4)
+        return (log_type, ptr)
+
+    def parse_headers(self):
+        self.common_header['sync'] = self.u32(0x0)
+        self.common_header['type'] = self.u32(0x4)
+        self.common_header['version'] = self.u32(0x8)
+        self.common_header['self'] = self.vc_ptr(0xc)
+
+        if self.common_header['self'] != self.log_start:
+            raise Exception("VC logging header not found")
+
+        asrt_type, asrt_ptr = self.parse_log_descriptor(self.common_header_len)
+        debug("ASRT %x %x" % (asrt_type, asrt_ptr))
+        msg_type, msg_ptr = self.parse_log_descriptor(self.common_header_len + self.log_descriptor_len)
+        debug("MSG %x %x" % (msg_type, msg_ptr))
+
+        if self.display_msg:
+            if msg_type != 1 or not self.valid_ptr(msg_ptr):
+                raise Exception("MSG log not found")
+            self.msg_fifo = self.parse_fifo_log_header(msg_ptr)
+
+        if self.display_assert:
+            debug("Display assert")
+            if asrt_type != 2 or not self.valid_ptr(asrt_ptr):
+                raise Exception("MSG log not found")
+            self.asrt_fifo = self.parse_fifo_log_header(asrt_ptr)
+
+    def log_offset(self, ptr):
+        self.check_ptr(ptr)
+        return ptr - self.log_start
+
+    def valid_ptr(self, ptr):
+        return ptr >= self.log_start and ptr < (self.log_start + self.log_size)
+
+    def check_ptr(self, ptr):
+        if not self.valid_ptr(ptr):
+            raise Exception("Bad log ptr %08x", ptr)
+
+    def fifo_parse_msg_header(self, buf):
+        hdr = {}
+        hdr['time'] = self.u32(0x0, buf)
+        hdr['seq_num'] = self.u16(0x4, buf)
+        hdr['size'] = self.u16(0x6, buf)
+        debug(str(hdr))
+        if hdr['size'] == 0:
+            raise EndOfFifoException()
+        return hdr
+
+    def fifo_read_object(self, fifo, object_size):
+        """ Retrieve an object as an array of bytes from the FIFO as byete-array taking wrapping into account """
+        ptr = fifo['rd_ptr']
+        object_end_ptr = ptr + object_size
+
+        if ptr < fifo['wr_ptr'] and object_end_ptr >= fifo['wr_ptr']:
+            raise EndOfFifoException()
+
+        if object_end_ptr >= fifo['end']:
+            debug("WRAP")
+            slice_start = self.log_offset(ptr)
+            slice_end = self.log_offset(fifo['end'] - 1)
+            buf = self.log_buffer[slice_start : slice_end] # Data up to end of fifo
+
+            slice_start = self.log_offset(fifo['start'])
+            fifo['rd_ptr'] = object_end_ptr - fifo['end'] + fifo['start']
+            slice_end = self.log_offset(fifo['rd_ptr'])
+            buf = bytearray(buf).extend(self.log_buffer[slice_start : slice_end]) # Apped data that wrapped around
+        else:
+            slice_start = self.log_offset(ptr)
+            slice_end = self.log_offset(object_end_ptr)
+            buf = self.log_buffer[slice_start : slice_end]
+            fifo['rd_ptr'] = object_end_ptr
+        return buf
+
+    def get_msg(self, fifo):
+        buf = self.fifo_read_object(fifo, 8)
+        hdr = self.fifo_parse_msg_header(buf)
+
+        buf = self.fifo_read_object(fifo, 4)
+        level = self.u32(0, buf)
+
+        msg_len = hdr['size'] - 12 # Size is sizeof(hdr) + sizeof(level) strlen(msg)
+        buf = self.fifo_read_object(fifo, msg_len)
+        text = self.cstr(0, msg_len, buf)
+        return (hdr['time'], hdr['seq_num'], level, text)
+
+    def format_msg(self, time, seq_num, text, verbose=False):
+        if verbose:
+            return "%.3f: %d %s" % (time / 1000, seq_num, text + '\n')
+        else:
+            return "%.3f: %s" % (time / 1000, text + '\n')
+
+    def msg_log(self, verbose=False):
+        result = ''
+        self.msg_fifo['rd_ptr'] = self.msg_fifo['first_msg']
+
+        try:
+            while True:
+                time, seq_num, level, text, = self.get_msg(self.msg_fifo)
+                result += self.format_msg(time, seq_num, text, verbose)
+        except EndOfFifoException: # Stop now, returning all of the good messages
+            pass
+    
+        return result
+
+    def format_asrt(self, time, seq_num, text, verbose=False):
+        if verbose:
+            return "%.3f: %d %s" % (time / 1000000, seq_num, text + '\n')
+        else:
+            return "%.3f: %s" % (time / 1000000, text + '\n')
+
+    def get_asrt(self, fifo):
+        buf = self.fifo_read_object(fifo, 8)
+        hdr = self.fifo_parse_msg_header(buf)
+
+        msg_len = hdr['size'] - 8 # Size is sizeof(hdr) size of message
+        buf = self.fifo_read_object(fifo, msg_len)
+        offset = 0
+        for i in range(0, len(buf)): # Stop at null terminator
+            if buf[i] == 0:
+                break
+        func = struct.unpack_from("%ds" % i, buf[offset:i], 0)[0].decode(errors='ignore')
+        offset = i + 1
+        line = struct.unpack_from('<I', buf, offset)[0]
+        offset += 4
+        for i in range(offset, len(buf)): # Stop at null terminator
+            if buf[i] == 0:
+                break
+        cond = struct.unpack_from("%ds" % (i - offset), buf[offset:i], 0)[0].decode(errors='ignore')
+        text = "%s:%d %s" % (func, line, cond)
+        return (hdr['time'], hdr['seq_num'], text)
+
+    def asrt_log(self, verbose=False):
+        result = ''
+        self.asrt_fifo['rd_ptr'] = self.asrt_fifo['first_msg']
+
+        try:
+            while True:
+                time, seq_num, text, = self.get_asrt(self.asrt_fifo)
+                result += self.format_asrt(time, seq_num, text, verbose)
+        except EndOfFifoException: # Stop now, returning all of the good messages
+            pass
+    
+        return result
+
+class VideoCoreLog:
+    def __init__(self, asrt=False, msg=True, verbose=False):
+        start, size = self.log_phys_addr()
+        self.verbose = verbose
+        self.log_parser = VideoCoreLogParser(self.fetch_mem(start, size), start, size, asrt=asrt, msg=msg)
+
+    def log_phys_addr(self):
+        fh = os.open('/proc/device-tree/chosen/log', os.O_RDONLY)
+        log_start = struct.unpack('>I', os.read(fh, 4))[0]
+        log_size = struct.unpack('>I', os.read(fh, 4))[0]
+        debug("log-start 0x%08x log-size %u" % (log_start, log_size))
+        return (log_start, log_size)
+
+    def fetch_mem(self, start, size):
+        fh = os.open('/dev/mem', os.O_RDWR | os.O_SYNC)
+        mmem = mmap.mmap(fh, length=size, flags=mmap.MAP_SHARED, access=mmap.PROT_READ, offset=start)
+        mem = mmem.read(size)
+        os.close(fh)
+        return mem
+
+    def msg_log(self):
+        return self.log_parser.msg_log(self.verbose)
+
+    def asrt_log(self):
+        return self.log_parser.asrt_log(self.verbose)
+
+def main():
+    if os.getuid() != 0:
+        print("This command needs to be run as root e.g. sudo %s -m" % sys.argv[0])
+        sys.exit(1)
+
+    description = "Reads the Raspberry Pi VideoCore firmware log buffer."
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=description)
+    parser.add_argument('-a', '--assert', dest='asrt', action="store_true", default=False, required=False, help='Display asserts')
+    parser.add_argument('-m', '--msg', action="store_true", default=False, required=False, help='Display log messages')
+    parser.add_argument('-v', '--verbose', action="store_true", default=False, required=False, help='Verbose - display meta data')
+    args = parser.parse_args()
+
+    if args.msg or args.asrt:
+        log = VideoCoreLog(asrt=args.asrt, msg=args.msg, verbose=args.verbose)
+        if args.msg:
+            print(log.msg_log())
+        else:
+            print(log.asrt_log())
+    else:
+        parser.print_help()
+
+if __name__ == '__main__':
+    main()
