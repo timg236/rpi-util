@@ -10,6 +10,12 @@ export PATH=\${PATH}:\${HOME}/bin
 alias s='git status'
 alias vl='sudo \${HOME}/bin/videocore-log'
 alias ee='sudo -E rpi-eeprom-config --edit'
+
+if [ -f ~/.bash_crypto_mount ]; then
+   export CRYPTO_MOUNT="${HOME}/encrypted"
+   export CRYPTO_IMAGE="${HOME}/.encrypted.img"
+   . ~/.bash_crypto_mount
+fi
 EOF
 fi
 

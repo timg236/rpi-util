@@ -1,0 +1,73 @@
+# Author: Tim Gover
+# Description: Utility that allows sub-directories to be stored in an encrypted disk
+# Installation:
+# Save this file to your home directory and add the following to $HOME/.bashrc
+#
+# if [ -f ~/.bash_crypto_mount ]; then
+#   export CRYPTO_MOUNT="${HOME}/encrypted"
+#   export CRYPTO_IMAGE="${HOME}/.encrypted.img"
+#   . ~/.bash_crypto_mount
+# fi
+
+umount-encrypted() {
+   [ -d "${CRYPTO_MOUNT}" ] || return
+   sudo umount "${CRYPTO_MOUNT}" > /dev/null 2>&1
+   sudo cryptsetup luksClose encrypted-disk > /dev/null 2>&1
+
+   # Remove the symlinks into the encrypted volume
+   for i in $(find "${HOME}" -maxdepth 1 -type l -exec stat {} \;  | grep "File:" | grep "${CRYPTO_MOUNT}" | awk '{print $2}'); do
+      rm "${i}"
+   done
+   rmdir "${CRYPTO_MOUNT}"
+}
+
+mount-encrypted() {
+   umount-encrypted
+   mkdir -p "${CRYPTO_MOUNT}"
+   sudo cryptsetup luksOpen "${CRYPTO_IMAGE}" encrypted-disk
+   sudo mount /dev/mapper/encrypted-disk "${CRYPTO_MOUNT}"
+   if [ -d "${HOME}/.ssh" ]; then
+      rm -f "${HOME}/.ssh/known_hosts"
+      rmdir "${HOME}/.ssh"
+   fi
+
+   # Restore the symlinks
+   for i in $(find "${CRYPTO_MOUNT}/${USER}/" -maxdepth 1); do
+      link="$(basename $i)"
+      if [ "${link}" = "${USER}" ]; then
+         continue;
+      elif [ ! -e "${HOME}/${link}" ]; then
+         ln -s "${CRYPTO_MOUNT}/${USER}/${link}" "${HOME}/${link}"
+      fi
+   done
+}
+
+create-encrypted-disk-usage() {
+   echo "create-encrypted-disk img_filename size_gb passphase"
+}
+
+create-encrypted-disk() {
+   img_name="${1}"
+   size_gb="${2}"
+   passphase="${3}"
+
+   if [ $# != 3 ]; then
+      create-encrypted-disk-usage
+      return 1;
+   fi
+
+   if [ -e "${img_name}" ]; then
+      echo "${img_name} already exists"
+      create-encrypted-disk-usage
+      return 1;
+   fi
+
+   key_file="$(mktemp)"
+   echo -n "${passphase}" > "${key_file}"
+   dd if=/dev/zero of="${img_name}" bs=1M count=$((1024 * size_gb))
+   cryptsetup -q luksFormat --type=luks2 "${img_name}" --key-file "${key_file}" || return
+   sudo cryptsetup luksOpen "${img_name}" tmp-encrypted --key-file "${key_file}" || return
+   sudo mkfs /dev/mapper/tmp-encrypted
+   sudo cryptsetup luksClose tmp-encrypted
+   echo "encrypted with passphase: \"$(cat ${key_file})\""
+}
