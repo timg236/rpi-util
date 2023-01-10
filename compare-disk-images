@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# Author: Tim Gover
+# Chunk based image-file diff utility. Finds the first 1MB chunk that differs
+# for later analysis with hexdump etc
+
+set -e
+script_name=$(basename $0)
+
+die() {
+   echo "$@" >&2
+   exit 1
+}
+
+usage() {
+cat <<EOF
+EOF
+${script_name} file_a file_b
+exit
+}
+
+file_a="${1}"
+file_b="${2}"
+
+[ -n "${file_a}" ] || usage
+[ -n "${file_b}" ] || usage
+
+chunk=0
+size="$(du -sm "${file_a}" | awk '{print $1}')"
+i=0
+
+while [ $i -lt "${size}" ]; do
+   chunk_a=/tmp/chunk_${i}_a.data
+   chunk_b=/tmp/chunk_${i}_b.data
+   dd if="${file_a}" of="${chunk_a}" bs=1M count=1 skip="${i}" > /dev/null 2>&1
+   dd if="${file_b}" of="${chunk_b}" bs=1M count=1 skip="${i}" > /dev/null 2>&1
+   if ! diff "${chunk_a}" "${chunk_b}"; then
+      echo
+      echo "Files differ at chunk ${i}"
+      exit 1
+   fi
+   echo -n "."
+   rm -f "${chunk_a}" "${chunk_b}"
+   i=$((i + 1))
+done
+echo
+echo "Files are identical"
