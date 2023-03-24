@@ -1,0 +1,21 @@
+#!/bin/sh
+
+vcgencmd readmr 4 0 0
+vcgencmd readmr 5 0 0
+vcgencmd readmr 6 0 0
+vcgencmd readmr 8 0 0
+
+vcgencmd readmr 4 0 1
+vcgencmd readmr 5 0 1
+vcgencmd readmr 6 0 1
+vcgencmd readmr 8 0 1
+
+vcgencmd readmr 4 1 0
+vcgencmd readmr 5 1 0
+vcgencmd readmr 6 1 0
+vcgencmd readmr 8 1 0
+
+vcgencmd readmr 4 1 1
+vcgencmd readmr 5 1 1
+vcgencmd readmr 6 1 1
+vcgencmd readmr 8 1 1
