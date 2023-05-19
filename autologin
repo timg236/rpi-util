@@ -1,0 +1,23 @@
+#!/bin/sh
+
+if [ $(id -u) -ne 0 ]; then
+   echo "Script must be run as root"
+   exit 1
+fi
+
+ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+service_dir="/etc/systemd/system/getty@tty1.service.d"
+mkdir -p "${service_dir}"
+cat > "${service_dir}/autologin.conf" << EOF
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin pi --noclear %I \$TERM
+EOF
+
+service_dir="/etc/systemd/system/serial-getty@ttyAMA0.service.d"
+mkdir -p "${service_dir}"
+cat > "${service_dir}/autologin.conf" <<EOF
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty -o '-p -f -- \\u' --keep-baud --autologin pi 921600,460800,230400,115200,57600,38400,9600 - $TERM
+EOF
