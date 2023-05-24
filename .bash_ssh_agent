@@ -1,0 +1,26 @@
+function setup-ssh() {
+   export SSH_AUTH_SOCK=""
+   export SSH_AGENT_PID=""
+   ssh_agent_path="${HOME}/.ssh-agent"
+   [ -f "${ssh_agent_path}" ] && . "${ssh_agent_path}" > /dev/null
+   if [ -n "${SSH_AUTH_SOCK}" ]; then
+      if ssh-add -l > /dev/null; then
+         echo "Found ssh-agent"
+      else
+         rm -f "${SSH_AUTH_SOCK}"
+         export SSH_AUTH_SOCK=""
+         export SSH_AGENT_PID=""
+      fi
+   fi
+
+   if [ -z "${SSH_AUTH_SOCK}" ]; then
+      ssh-agent > "${ssh_agent_path}"
+      . "${ssh_agent_path}"  > /dev/null
+      echo "Started ssh-agent"
+      ssh-add
+   fi
+   export SSH_AUTH_SOCK="${SSH_AUTH_SOCK}"
+   export SSH_AGENT_PID="${SSH_AGENT_PID}"
+   ssh-add -l
+}
+
