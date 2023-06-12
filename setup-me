@@ -1,21 +1,28 @@
 #!/bin/sh
 
-if ! grep -q "USER PREFS" "$HOME/.bashrc"; then
-   echo 0 > "$HOME/reboot-count"
-
-cat <<EOF >> "${HOME}/.bashrc"
-#USER PREFS
+cat <<EOF > "${HOME}/.bash_user_extras"
 export EDITOR=vim
-export PATH=\${PATH}:\${HOME}/bin
+export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util
 alias s='git status'
-alias vl='sudo \${HOME}/bin/videocore-log'
+alias vl='sudo \${HOME}/rpi-util/videocore-log'
 alias ee='sudo -E rpi-eeprom-config --edit'
+alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+V3D -o+ISP -o-H264 -t'
 
 if [ -f ~/.bash_crypto_mount ]; then
    export CRYPTO_MOUNT="${HOME}/encrypted"
    export CRYPTO_IMAGE="${HOME}/.encrypted.img"
    . ~/.bash_crypto_mount
 fi
+source ~/rpi-util/.bash_ssh_agent
+vcgencmd get_config vpred
+grep Serial /proc/cpuinfo
+vcgencmd measure_temp
+vcgencmd measure_volts
+vcgencmd get_config arm_freq
+EOF
+
+if ! grep -q ".bash_user_extras" "${HOME}/.bashrc"; then
+cat <<EOF >> "${HOME}/.bashrc"
+. \${HOME}/.bash_user_extras
 EOF
 fi
-
