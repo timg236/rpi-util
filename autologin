@@ -14,7 +14,7 @@ ExecStart=
 ExecStart=-/sbin/agetty --autologin pi --noclear %I \$TERM
 EOF
 
-service_dir="/etc/systemd/system/serial-getty@ttyAMA0.service.d"
+service_dir="/etc/systemd/system/serial-getty@ttyAMA10.service.d"
 mkdir -p "${service_dir}"
 cat > "${service_dir}/autologin.conf" <<EOF
 [Service]
