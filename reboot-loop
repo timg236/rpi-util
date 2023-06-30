@@ -9,7 +9,7 @@ if [ -f /boot/reboot ]; then
    count=\$((count + 1))
    echo -n \$count > "\${HOME}/reboot-count"
    echo "BOOT COUNT \$count"
-   sleep 5
+   sleep 10
    sudo reboot "${1}"
 else
    echo 0 > "\${HOME}/reboot-count"

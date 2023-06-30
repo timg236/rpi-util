@@ -19,6 +19,8 @@ grep Serial /proc/cpuinfo
 vcgencmd measure_temp
 vcgencmd measure_volts
 vcgencmd get_config arm_freq
+vcgencmd get_mem arm
+vcgencmd get_mem gpu
 EOF
 
 if ! grep -q ".bash_user_extras" "${HOME}/.bashrc"; then
