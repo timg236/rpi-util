@@ -8,6 +8,15 @@ alias vl='sudo \${HOME}/rpi-util/videocore-log'
 alias ee='sudo -E rpi-eeprom-config --edit'
 alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -t'
 
+function update-recovery()
+{
+   mkdir -p /home/pi/sd
+   sudo mount /dev/mmcblk0p1 /home/pi/sd
+   sudo cp -f /boot/recovery.bin /home/pi/sd/recovery.bin
+   sudo umount /home/pi/sd
+   sudo sync
+}
+
 if [ -f ~/.bash_crypto_mount ]; then
    export CRYPTO_MOUNT="${HOME}/encrypted"
    export CRYPTO_IMAGE="${HOME}/.encrypted.img"
