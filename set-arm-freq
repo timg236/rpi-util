@@ -1,0 +1,4 @@
+#!/bin/sh
+
+freq=$1
+sudo vcmailbox 0x00038002 12 8 3 $((freq * 1000000)) 1

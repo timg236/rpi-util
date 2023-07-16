@@ -1,0 +1,4 @@
+#!/bin/sh
+
+sudo sh -c "echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor

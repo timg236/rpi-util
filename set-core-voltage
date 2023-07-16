@@ -1,0 +1,4 @@
+#!/bin/sh
+
+sudo vcmailbox 0x00038003 8 8 1 $1
+vcgencmd measure_volts uncached
