@@ -4,7 +4,7 @@ if ! grep -q "BOOT COUNT" "$HOME/.bashrc"; then
    echo 0 > "$HOME/reboot-count"
 
 cat <<EOF >> "${HOME}/.bashrc"
-if [ -f /boot/reboot ]; then
+if [ -f /boot/firmware/reboot ]; then
    count=\$(cat \${HOME}/reboot-count)
    count=\$((count + 1))
    echo -n \$count > "\${HOME}/reboot-count"
