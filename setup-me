@@ -2,11 +2,12 @@
 
 cat <<EOF > "${HOME}/.bash_user_extras"
 export EDITOR=vim
-export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util
+export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin
 alias s='git status'
 alias vl='sudo \${HOME}/rpi-util/videocore-log'
 alias ee='sudo -E rpi-eeprom-config --edit'
 alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -t'
+alias S='. \$HOME/.bashrc'
 
 function update-recovery()
 {
@@ -15,6 +16,23 @@ function update-recovery()
    sudo cp -f /boot/recovery.bin /home/pi/sd/recovery.bin
    sudo umount /home/pi/sd
    sudo sync
+}
+
+function pico-cmake-init() {
+   ln -sf "\${PICO_SDK_PATH}/external/pico_sdk_import.cmake" .
+   rm -rf build
+   mkdir build
+   cd build
+   if [ "\$1" = "-d" ]; then
+      cmake -DCMAKE_BUILD_TYPE=Debug ..
+   else
+      cmake ..
+   fi
+}
+
+function pico-upload()
+{
+   sudo openocd -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000" -c "program \$1 verify reset exit"
 }
 
 if [ -f ~/.bash_crypto_mount ]; then
@@ -31,6 +49,7 @@ vcgencmd get_config arm_freq
 vcgencmd get_mem arm
 vcgencmd get_mem gpu
 setup-ssh
+export PICO_SDK_PATH=$HOME/pico-sdk
 EOF
 
 if ! grep -q ".bash_user_extras" "${HOME}/.bashrc"; then

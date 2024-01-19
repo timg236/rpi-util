@@ -1,0 +1,22 @@
+#!/bin/sh
+
+sudo apt install -y tmux vim openocd git bc bison flex libssl-dev make build-essential time pkg-config libusb-1.0-0-dev cmake picocom
+
+cd $HOME
+
+if [ ! -d pico-sdk ]; then
+   git clone https://github.com/raspberrypi/pico-sdk
+   git submodule init
+   git submodule update
+fi
+
+if [ ! -d picotool ]; then
+   git clone https://github.com/raspberrypi/picotool
+   cd picotool
+   sudo cp udev/99-picotool.rules /etc/udev/rules.d/
+   mkdir build
+   cd build
+   cmake ..
+   make
+   sudo make install
+fi
