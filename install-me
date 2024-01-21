@@ -1,13 +1,33 @@
 #!/bin/sh
 
-sudo apt install -y tmux vim openocd git bc bison flex libssl-dev make build-essential time pkg-config libusb-1.0-0-dev cmake picocom
+script_dir=$(cd $(dirname $0) && pwd)
+
+sudo apt update
+sudo apt install -y tmux vim fonts-powerline
+sudo apt install -y git bc bison flex libssl-dev make build-essential time pkg-config
+sudo apt install -y openocd gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib picocom cmake libusb-1.0-0-dev
 
 cd $HOME
+
+cp -f "${script_dir}/.vimrc" "${HOME}"
+mkdir -p "${HOME}/.vim/colors"
+cp -f "${script_dir}/molokai.vim" "${HOME}/.vim/colors"
+if [ ! -e ~/.vim/bundle/Vundle.vim ]; then
+   git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+fi
 
 if [ ! -d pico-sdk ]; then
    git clone https://github.com/raspberrypi/pico-sdk
    git submodule init
    git submodule update
+fi
+
+if [ ! -d picoprobe ]; then
+   git clone https://github.com/raspberrypi/picoprobe.git
+fi
+
+if [ ! -d pico-examples ]; then
+   git clone https://github.com/raspberrypi/pico-examples
 fi
 
 if [ ! -d picotool ]; then
@@ -20,3 +40,4 @@ if [ ! -d picotool ]; then
    make
    sudo make install
 fi
+wget https://github.com/raspberrypi/picoprobe/releases/download/picoprobe-cmsis-v1.0.3/debugprobe.uf2
