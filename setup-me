@@ -47,6 +47,8 @@ fi
 source ~/rpi-util/.bash_ssh_agent
 vcgencmd get_config vpred
 grep Serial /proc/cpuinfo
+vcgencmd bootloader_version | grep version
+vcgencmd version | grep version
 vcgencmd measure_temp
 vcgencmd measure_volts
 vcgencmd get_config arm_freq
