@@ -18,8 +18,10 @@ fi
 
 if [ ! -d pico-sdk ]; then
    git clone https://github.com/raspberrypi/pico-sdk
+   cd pico-sdk
    git submodule init
    git submodule update
+   cd ..
 fi
 
 if [ ! -d picoprobe ]; then
