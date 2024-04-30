@@ -24,9 +24,11 @@ function pico-cmake-init() {
    mkdir build
    cd build
    if [ "\$1" = "-d" ]; then
-      cmake -DCMAKE_BUILD_TYPE=Debug ..
+       echo cmake -DCMAKE_BUILD_TYPE=Debug "\${@}" ..
+       cmake -DCMAKE_BUILD_TYPE=Debug "\${@}" ..
    else
-      cmake ..
+      echo cmake "\${@}" ..
+      cmake "\${@}" ..
    fi
 }
 
