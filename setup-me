@@ -6,7 +6,7 @@ export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin
 alias s='git status'
 alias vl='sudo \${HOME}/rpi-util/videocore-log'
 alias ee='sudo -E rpi-eeprom-config --edit'
-alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -t'
+alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -t -e'
 alias S='. \$HOME/.bashrc'
 
 function update-recovery()
