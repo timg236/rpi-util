@@ -20,15 +20,28 @@ function update-recovery()
 
 function pico-cmake-init() {
    ln -sf "\${PICO_SDK_PATH}/external/pico_sdk_import.cmake" .
-   rm -rf build
-   mkdir build
-   cd build
-   if [ "\$1" = "-d" ]; then
-       echo cmake -DCMAKE_BUILD_TYPE=Debug "\${@}" ..
-       cmake -DCMAKE_BUILD_TYPE=Debug "\${@}" ..
+   if [ -f CMakeLists.txt ]; then
+      if ! grep -q cmake_minimum_required CMakeLists.txt; then
+         tmp=\$(mktemp)
+         echo "cmake_minimum_required(VERSION 3.13)" >> \${tmp}
+         echo "include(pico_sdk_import.cmake)" >> \${tmp}
+         echo "project(pico_app)" >> \${tmp}
+         echo "pico_sdk_init()" >> \${tmp}
+         cat CMakeLists.txt | grep -v set_url >> \${tmp}
+         mv \${tmp} CMakeLists.txt
+      fi
+      rm -rf build
+      mkdir build
+      cd build
+      if [ "\$1" = "-d" ]; then
+          echo cmake -DCMAKE_BUILD_TYPE=Debug "\${@}" ..
+          cmake -DCMAKE_BUILD_TYPE=Debug "\${@}" ..
+      else
+         echo cmake "\${@}" ..
+         cmake "\${@}" ..
+      fi
    else
-      echo cmake "\${@}" ..
-      cmake "\${@}" ..
+      echo "No CMakeLists.txt"
    fi
 }
 
