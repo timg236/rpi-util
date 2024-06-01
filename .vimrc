@@ -192,10 +192,11 @@ command! Bdi :call DeleteInactiveBufs()
 set background=dark
 if has("gui_running")
     set guioptions=
-    "colorscheme molokai
     colorscheme PaperColor
     set spell
     "set guifont=Liberation\ Mono\ for\ Powerline\ 11
+else
+    colorscheme molokai
 endif
 
 nnoremap <leader>y :let g:ycm_auto_trigger=0<CR>

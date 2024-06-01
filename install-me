@@ -11,7 +11,12 @@ cd $HOME
 
 cp -f "${script_dir}/.vimrc" "${HOME}"
 mkdir -p "${HOME}/.vim/colors"
-cp -f "${script_dir}/molokai.vim" "${HOME}/.vim/colors"
+cd "${HOME}/.vim/colors"
+if [ ! -f molokai.vim ]; then
+   wget https://raw.githubusercontent.com/tomasr/molokai/master/colors/molokai.vim
+fi
+cd "${HOME}"
+
 if [ ! -e ~/.vim/bundle/Vundle.vim ]; then
    git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 fi
