@@ -9,7 +9,7 @@ export EDITOR=vim
 export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin
 alias s='git status'
 alias vl='sudo \${HOME}/rpi-util/videocore-log'
-alias ee='sudo -E rpi-eeprom-config --edit'
+alias ee='sudo EDITOR=vim rpi-eeprom-config --edit'
 alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -t -e'
 alias S='. \$HOME/.bashrc'
 
@@ -65,7 +65,7 @@ if [ -f ~/.bash_crypto_mount ]; then
 fi
 source ~/rpi-util/.bash_ssh_agent
 
-if false; then
+if [ -d /proc/device-tree/chosen/bootloader ]; then
    vcgencmd get_config vpred
    grep Serial /proc/cpuinfo
    vcgencmd bootloader_version | grep version
@@ -78,7 +78,12 @@ if false; then
 fi
 setup-ssh
 export PICO_SDK_PATH=$HOME/pico-sdk
+export PATH=$HOME/.venv/bin:$PATH
 EOF
+
+if [ ! -d $HOME/.venv ]; then
+   python3 -m venv $HOME/.venv
+fi
 
 if ! grep -q ".bash_user_extras" "${HOME}/.bashrc"; then
 cat <<EOF >> "${HOME}/.bashrc"
