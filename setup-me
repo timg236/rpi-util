@@ -5,6 +5,7 @@ script_dir=$(cd "$(dirname "$0")" && pwd)
 cp -f "${script_dir}/.bash_ssh_agent" $HOME
 
 cat <<EOF > "${HOME}/.bash_user_extras"
+set -o vi
 export EDITOR=vim
 export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin
 alias s='git status'
