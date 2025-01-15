@@ -12,6 +12,8 @@ alias vl='sudo \${HOME}/rpi-util/videocore-log'
 alias ee='sudo EDITOR=vim rpi-eeprom-config --edit'
 alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -t -e'
 alias S='. \$HOME/.bashrc'
+alias gg='git grep -n --color'
+alias hg='history | grep -i --color'
 
 function update-recovery()
 {
@@ -59,8 +61,8 @@ function pico-upload()
 }
 
 if [ -f ~/.bash_crypto_mount ]; then
-   export CRYPTO_MOUNT="${HOME}/encrypted"
-   export CRYPTO_IMAGE="${HOME}/.encrypted.img"
+   export CRYPTO_MOUNT="\${HOME}/encrypted"
+   export CRYPTO_IMAGE="\${HOME}/.encrypted.img"
    . ~/.bash_crypto_mount
 fi
 source ~/rpi-util/.bash_ssh_agent
@@ -77,8 +79,8 @@ if [ -d /proc/device-tree/chosen/bootloader ]; then
    vcgencmd get_mem gpu
 fi
 setup-ssh
-export PICO_SDK_PATH=$HOME/pico-sdk
-export PATH=$HOME/.venv/bin:$PATH
+export PICO_SDK_PATH=\$HOME/pico-sdk
+export PATH=\$HOME/.venv/bin:\$PATH
 EOF
 
 if [ ! -d $HOME/.venv ]; then
