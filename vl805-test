@@ -11,7 +11,8 @@ sleep 1
 sudo su -c "echo 1 > /sys/bus/pci/rescan"
 sleep 2
 sudo su -c "lspci"
-lsusb 
+lsusb -t
+sudo vclog -m | egrep -i "xhci|vli"
 if lsusb | grep -q "Optical Mouse"; then 
 	exit 0
 fi
