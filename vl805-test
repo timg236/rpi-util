@@ -1,0 +1,18 @@
+#!/bin/sh
+
+
+sudo su -c "echo 1 > /sys/bus/pci/rescan"
+sleep 2
+
+sudo su -c "echo 1 > /sys/bus/pci/devices/0000\:00\:00.0/remove"
+sudo su -c "lspci"
+sudo su -c "lsusb"
+sleep 1
+sudo su -c "echo 1 > /sys/bus/pci/rescan"
+sleep 2
+sudo su -c "lspci"
+lsusb 
+if lsusb | grep -q "Optical Mouse"; then 
+	exit 0
+fi
+exit 1
