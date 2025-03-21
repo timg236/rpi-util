@@ -6,6 +6,7 @@ sudo apt update
 sudo apt install -y tmux vim fonts-powerline
 sudo apt install -y git bc bison flex libssl-dev make build-essential time pkg-config
 sudo apt install -y openocd gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib picocom cmake libusb-1.0-0-dev
+sudo apt install -y xterm
 
 cd $HOME
 
