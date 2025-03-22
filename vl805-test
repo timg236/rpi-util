@@ -1,7 +1,8 @@
 #!/bin/sh
 
+match="xhci_hcd/4p"
 
-if lsusb | grep -q "Optical Mouse"; then 
+if lsusb | grep -q "${match}"; then
    echo ""
 else
    echo "rescan"
@@ -18,7 +19,7 @@ sleep 3
 sudo su -c "lspci"
 lsusb -t
 sudo vclog -m | egrep -i "xhci|vli" | tail -n5
-if lsusb | grep -q "Optical Mouse"; then 
+if lsusb | grep -q "${match}"; then
 	exit 0
 fi
 exit 1
