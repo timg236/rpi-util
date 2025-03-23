@@ -1,0 +1,191 @@
+
+function select-kernel()
+{
+   cd "${HOME}/linux-${KERNEL_VERSION}"
+   if [ "${KARCH}" == "arm" ]; then
+      export KIMAGE=zImage
+      export CROSS_COMPILE=arm-linux-gnueabihf-
+      export KERNEL=${KERNEL:-kernel7l}
+   else
+      export CROSS_COMPILE=aarch64-linux-gnu-
+      export KIMAGE=Image
+      if [ "${KERNEL_VERSION}" = 2712 ] || [ "${DEFCONFIG}" = 2712 ]; then
+         export KERNEL=kernel_2712
+      else
+         export KERNEL=${KERNEL:-kernel8}
+      fi
+   fi
+}
+
+function compile-kernel()
+{
+   make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} -j${JOBS} ${KIMAGE} modules dtbs
+}
+
+function savedefconfig()
+{
+   (
+    set -e
+    set -x
+    select-kernel
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} savedefconfig
+   )
+}
+
+function build-kernel()
+{
+   (
+    set -e
+    set -x
+    select-kernel
+    defconfig=bcm${DEFCONFIG}_defconfig
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} ${defconfig}
+    compile-kernel
+   )
+}
+
+function menuconfig()
+{
+   (
+    set -e
+    set -x
+    select-kernel
+    defconfig=bcm${DEFCONFIG}_defconfig
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} ${defconfig}
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} menuconfig
+   )
+}
+
+function mfg-2709-menuconfig()
+{
+   (
+    set -e
+    select-kernel
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} bcm2709_mfg_defconfig
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} menuconfig
+   )
+}
+
+function package-kernel()
+{
+   (
+    set -x
+    set -e
+
+    deploy="deploy-${DEFCONFIG}"
+    cd $HOME/linux-${KERNEL_VERSION}
+    rm -rf "${deploy}"
+    mkdir -p "${deploy}/overlays"
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_DTBS_PATH="${deploy}" dtbs_install
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_MOD_PATH="${deploy}" modules_install
+    if [ -d "${deploy}/broadcom" ]; then
+      cp -f "${deploy}/broadcom/"*.dtb $HOME/linux-${KERNEL_VERSION}/${deploy}
+    fi
+    find "${deploy}" -type l -exec rm -f \{} \;
+    cp arch/${KARCH}/boot/dts/overlays/README "${deploy}/overlays"
+    cp arch/${KARCH}/boot/${KIMAGE} "${deploy}/${KERNEL}.img"
+   )
+}
+
+function deploy-kernel()
+{
+   (
+    set -e
+    pi_addr="${PI_ADDR}"
+    bless-pi
+    cd $HOME/linux-${KERNEL_VERSION}
+    if [ -n "${pi_addr}" ]; then
+        if false; then
+           rm -rf backup
+           mkdir -p backup/lib/modules
+           rsync pi@${pi_addr}:/boot/firmware/* backup
+           rsync pi@${pi_addr}:/lib/modules/* backup/lib/modules
+        fi
+
+        deploy="deploy-${DEFCONFIG}"
+        ssh pi@${pi_addr} rm -rf deploy
+        rsync -zav ${deploy}/* pi@${pi_addr}:/home/pi/deploy
+        ssh pi@${pi_addr} "sudo rm -rf /boot/firmware/*.dtb /boot/overlays/*"
+        ssh pi@${pi_addr} "sudo cp -f /home/pi/deploy/*.dtb /boot/firmware"
+        ssh pi@${pi_addr} "sudo cp -rf /home/pi/deploy/overlays/* /boot/firmware/overlays"
+        ssh pi@${pi_addr} "sudo cp -f /home/pi/deploy/*.img /boot/firmware"
+        ssh pi@${pi_addr} "sudo cp -rf /home/pi/deploy/lib/modules/* /lib/modules"
+        ssh pi@${pi_addr} "sync"
+
+    else
+        echo "Usage: deploy-kernel IP_ADDR"
+    fi
+   )
+}
+
+function deploy-device-tree()
+{
+   (
+    set -e
+    pi_addr="${PI_ADDR}"
+    bless-pi
+    cd $HOME/linux-${KERNEL_VERSION}
+    if [ -n "${pi_addr}" ]; then
+        deploy="deploy-${DEFCONFIG}"
+        ssh pi@${pi_addr} rm -rf deploy
+        rsync -zav arch/arm64/boot/dts/broadcom/*.dtb pi@${pi_addr}:/home/pi/deploy
+        ssh pi@${pi_addr} "sudo cp -f /home/pi/deploy/*.dtb /boot"
+        ssh pi@${pi_addr} "sync"
+
+    else
+        echo "Usage: deploy-kernel IP_ADDR"
+    fi
+   )
+}
+
+function bless-pi() {
+   (
+    set -e
+    set -x
+    pi_addr="${PI_ADDR}"
+    ssh pi@${PI_ADDR} "mkdir -p /home/pi/.ssh ; chmod go-rwx /home/pi/.ssh"
+    scp -r ${HOME}/.ssh/auth/* pi@${PI_ADDR}:/home/pi/.ssh
+    cd $HOME
+   )
+}
+
+function select-rt() {
+   export PLATFORM=raspberrypi_linux
+   export KERNEL_VERSION=rt
+   export KERNEL=kernel8-rt
+   export DEFCONFIG=2711_rt
+   export KARCH=arm64
+   export ARCH=arm64
+   select-kernel
+}
+
+function select-kernel8() {
+   export PLATFORM=raspberrypi_linux
+   export KERNEL_VERSION=kernel8
+   export DEFCONFIG=2711
+   export KARCH=arm64
+   export ARCH=arm64
+   select-kernel
+}
+
+function select-2709()
+{
+   export PLATFORM=raspberrypi_linux
+   export KERNEL_VERSION=2709
+   export KERNEL=kernel7
+   export DEFCONFIG=2709
+   export KARCH=arm
+   export ARCH=arm
+   select-kernel
+}
+
+function select-2711()
+{
+   export PLATFORM=raspberrypi_linux
+   export KERNEL_VERSION=2711
+   export KERNEL=kernel7l
+   export DEFCONFIG=2711
+   export KARCH=arm
+   export ARCH=arm
+   select-kernel
+}
