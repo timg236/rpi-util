@@ -118,6 +118,20 @@ function deploy-kernel()
    )
 }
 
+function install-kernel()
+{
+   (
+    set -e
+    pi_addr="${PI_ADDR}"
+    cd $HOME/linux-${KERNEL_VERSION}
+    deploy="deploy-${DEFCONFIG}"
+    sudo cp -f ${deploy}/*.dtb /boot/firmware
+    sudo cp -rf ${deploy}/overlays/* /boot/firmware/overlays
+    sudo cp -f ${deploy}/*.img /boot/firmware
+    sudo cp -rf ${deploy}/lib/modules/* /lib/modules
+   )
+}
+
 function deploy-device-tree()
 {
    (
