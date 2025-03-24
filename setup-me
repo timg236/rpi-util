@@ -6,7 +6,7 @@ cp -f "${script_dir}/.bash_ssh_agent" $HOME
 cp -f "${script_dir}/.bash_kernel" $HOME
 
 cat <<EOF > "${HOME}/.bash_user_extras"
-set -o vi
+set editing-mode vi
 export EDITOR=vi
 export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin
 alias s='git status'
