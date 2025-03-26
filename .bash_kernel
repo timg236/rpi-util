@@ -38,7 +38,7 @@ function build-kernel()
     set -e
     set -x
     select-kernel
-    defconfig=bcm${DEFCONFIG}_defconfig
+    defconfig=${KERNEL_PLATFORM}${DEFCONFIG}_defconfig
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} ${defconfig}
     compile-kernel
    )
@@ -50,7 +50,7 @@ function menuconfig()
     set -e
     set -x
     select-kernel
-    defconfig=bcm${DEFCONFIG}_defconfig
+    defconfig=${KERNEL_PLATFORM}${DEFCONFIG}_defconfig
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} ${defconfig}
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} menuconfig
    )
@@ -164,7 +164,7 @@ function bless-pi() {
 }
 
 function select-rt() {
-   export PLATFORM=raspberrypi_linux
+   export KERNEL_PLATFORM=bcm
    export KERNEL_VERSION=rt
    export KERNEL=kernel8_rt
    export DEFCONFIG=2711_rt
@@ -174,7 +174,7 @@ function select-rt() {
 }
 
 function select-kernel8() {
-   export PLATFORM=raspberrypi_linux
+   export KERNEL_PLATFORM=bcm
    export KERNEL_VERSION=kernel8
    export DEFCONFIG=2711
    export KARCH=arm64
@@ -184,7 +184,7 @@ function select-kernel8() {
 
 function select-2709()
 {
-   export PLATFORM=raspberrypi_linux
+   export KERNEL_PLATFORM=bcm
    export KERNEL_VERSION=2709
    export KERNEL=kernel7
    export DEFCONFIG=2709
@@ -195,7 +195,7 @@ function select-2709()
 
 function select-2711()
 {
-   export PLATFORM=raspberrypi_linux
+   export KERNEL_PLATFORM=bcm
    export KERNEL_VERSION=2711
    export KERNEL=kernel7l
    export DEFCONFIG=2711
