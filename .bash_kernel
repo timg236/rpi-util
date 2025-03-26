@@ -166,7 +166,7 @@ function bless-pi() {
 function select-rt() {
    export PLATFORM=raspberrypi_linux
    export KERNEL_VERSION=rt
-   export KERNEL=kernel8-rt
+   export KERNEL=kernel8_rt
    export DEFCONFIG=2711_rt
    export KARCH=arm64
    export ARCH=arm64
