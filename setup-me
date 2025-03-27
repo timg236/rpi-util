@@ -10,7 +10,9 @@ cat <<EOF > "${HOME}/.bash_user_extras"
 set editing-mode vi
 export EDITOR=vim
 export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin
+alias k='select-kernel'
 alias s='git status'
+alias l='git log --decorate --oneline --graph'
 alias vl='sudo \${HOME}/rpi-util/videocore-log'
 alias ee='sudo EDITOR=vim rpi-eeprom-config --edit'
 alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -t -e'
