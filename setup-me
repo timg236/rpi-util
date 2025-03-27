@@ -4,6 +4,7 @@ script_dir=$(cd "$(dirname "$0")" && pwd)
 
 cp -f "${script_dir}/.bash_ssh_agent" $HOME
 cp -f "${script_dir}/.bash_kernel" $HOME
+cp -f "${script_dir}/.bash_git" $HOME
 
 cat <<EOF > "${HOME}/.bash_user_extras"
 set editing-mode vi
@@ -84,6 +85,7 @@ export PICO_SDK_PATH=\$HOME/pico-sdk
 export PATH=\$HOME/.venv/bin:\$PATH
 source ~/rpi-util/.bash_ssh_agent
 source ~/rpi-util/.bash_kernel
+source ~/rpi-util/.bash_git
 if [ -f /boot/firmware/reboot ]; then
    count=\$(cat \${HOME}/reboot-count)
    count=\$((count + 1))

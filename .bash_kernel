@@ -1,3 +1,18 @@
+function clean-kernel() {
+   (
+    set -ex
+    cd $HOME/linux-${KERNEL_VERSION}
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} clean
+   )
+}
+
+function reallyclean-kernel() {
+   (
+    set -ex
+    cd $HOME/linux-${KERNEL_VERSION}
+    git clean -fdx
+   )
+}
 
 function select-kernel()
 {
@@ -203,3 +218,33 @@ function select-2711()
    export ARCH=arm
    select-kernel
 }
+
+function select-rpi() {
+   export KERNEL_VERSION=rpi
+   export KERNEL_PLATFORM=bcm
+   export KERNEL=kernel6
+   export VARIANT=raspberrypi_medium
+   export DEFCONFIG=rpi
+   export KARCH=arm
+   export ARCH=arm
+   select-kernel
+}
+
+function select-mfg() {
+   export KERNEL_PLATFORM=bcm
+   export WORKTREE=mfg
+   export KERNEL_VERSION=ci
+   export DEFCONFIG=2711_mfg
+   select-kernel
+}
+
+function select-ci-mfg-32() {
+   export KERNEL_PLATFORM=bcm
+   export WORKTREE=ci
+   export KERNEL_VERSION=ci
+   export DEFCONFIG=2711_mfg
+   export KARCH=arm
+   export ARCH=arm
+   select-kernel
+}
+
