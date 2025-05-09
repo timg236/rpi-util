@@ -3,7 +3,7 @@
 set -x
 
 AP_NAME="$1"
-PASSWORD="$1"
+PASSWORD="$2"
 sudo nmcli connection del "$AP_NAME"
 sudo nmcli connection add type wifi con-name "$AP_NAME" ifname wlan0 ssid "$AP_NAME"
 sudo nmcli connection modify "$AP_NAME" wifi-sec.key-mgmt wpa-psk

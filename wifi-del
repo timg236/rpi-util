@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -x
+
+AP_NAME="$1"
+sudo nmcli connection del "$AP_NAME"

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -x
+
+AP_NAME="$1"
+PASSWORD="$2"
+
+sudo nmcli device wifi connect $AP_NAME password $PASSWORD
