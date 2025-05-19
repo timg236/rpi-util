@@ -8,7 +8,7 @@ cp -f "${script_dir}/.bash_git" $HOME
 
 cat <<EOF > "${HOME}/.bash_user_extras"
 set editing-mode vi
-export EDITOR=vi
+export EDITOR=vim
 export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin
 alias s='git status'
 alias vl='sudo \${HOME}/rpi-util/videocore-log'
@@ -17,7 +17,25 @@ alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -
 alias S='. \$HOME/.bashrc'
 alias gg='git grep -n --color'
 alias hg='history | grep -i --color'
+alias l='git log --decorate --oneline --graph'
+bind -m vi-insert "\C-l":clear-screen
 export JOBS=8
+
+function bless-pi() {
+   (
+    set -e
+    set -x
+    pi_addr="${PI_ADDR}"
+    ssh pi@${PI_ADDR} "mkdir -p /home/pi/.ssh ; chmod go-rwx /home/pi/.ssh"
+    scp -r ${HOME}/.ssh/auth/* pi@${PI_ADDR}:/home/pi/.ssh
+    cd $HOME
+   )
+}
+
+
+function ssh-pi() {
+   ssh pi@"${PI_ADDR}"
+}
 
 function update-recovery()
 {
