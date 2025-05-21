@@ -34,7 +34,7 @@ function bless-pi() {
 
 
 function ssh-pi() {
-   ssh pi@"${PI_ADDR}"
+   ssh pi@"\${PI_ADDR}"
 }
 
 function update-recovery()
