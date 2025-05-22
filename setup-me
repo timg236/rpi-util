@@ -10,6 +10,7 @@ cat <<EOF > "${HOME}/.bash_user_extras"
 set editing-mode vi
 export EDITOR=vim
 export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin
+export BR2_DL_DIR=\${HOME}/buildroot-dl
 alias k='select-kernel'
 alias s='git status'
 alias l='git log --decorate --oneline --graph'
