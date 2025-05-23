@@ -242,7 +242,7 @@ function select-ci-mfg-32() {
    export KERNEL_PLATFORM=bcm
    export WORKTREE=ci
    export KERNEL_VERSION=ci
-   export DEFCONFIG=2711_mfg
+   export DEFCONFIG=2711
    export KARCH=arm
    export ARCH=arm
    select-kernel
