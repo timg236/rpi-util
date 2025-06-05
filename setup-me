@@ -3,8 +3,6 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
 cp -f "${script_dir}/.bash_ssh_agent" $HOME
-cp -f "${script_dir}/.bash_kernel" $HOME
-cp -f "${script_dir}/.bash_git" $HOME
 
 cat <<EOF > "${HOME}/.bash_user_extras"
 set editing-mode vi

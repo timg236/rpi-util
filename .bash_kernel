@@ -54,7 +54,7 @@ function build-kernel()
     set -x
     select-kernel
     defconfig=${KERNEL_PLATFORM}${DEFCONFIG}_defconfig
-    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} ${defconfig}
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} ${defconfig}
     compile-kernel
    )
 }
@@ -66,8 +66,8 @@ function menuconfig()
     set -x
     select-kernel
     defconfig=${KERNEL_PLATFORM}${DEFCONFIG}_defconfig
-    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} ${defconfig}
-    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} menuconfig
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} ${defconfig}
+    make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} menuconfig
    )
 }
 
@@ -197,6 +197,15 @@ function select-kernel8() {
    select-kernel
 }
 
+function select-2712() {
+   export KERNEL_PLATFORM=bcm
+   export KERNEL_VERSION=2712
+   export DEFCONFIG=2712
+   export KARCH=arm64
+   export ARCH=arm64
+   select-kernel
+}
+
 function select-2709()
 {
    export KERNEL_PLATFORM=bcm
@@ -248,3 +257,34 @@ function select-ci-mfg-32() {
    select-kernel
 }
 
+function addconfig() {
+   config_text="${1}"
+   old_defconfig="${DEFCONFIG}"
+   old_KARCH="${KARCH}"
+   select-kernel
+   export KERNEL_PLATFORM=bcm
+   for KARCH in arm64 arm; do
+      if [ "${KARCH}" = arm64 ]; then
+         DEFCONFIGS="2711 2711_rt 2712"
+      else
+         DEFCONFIGS="rpi 2709 2711"
+      fi
+      for DEFCONFIG in $DEFCONFIGS; do
+         defconfig_file=arch/$KARCH/configs/bcm${DEFCONFIG}_defconfig
+         echo Updating ${KARCH} ${defconfig_file}
+         export DECONFIG=${DEFCONFIG}
+         echo "${config_text}" >> "${defconfig_file}"
+         git diff "${defconfig_file}"
+
+         defconfig=${KERNEL_PLATFORM}${DEFCONFIG}_defconfig
+         make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} ${KERNEL_PLATFORM}${DEFCONFIG}_defconfig
+
+         make ARCH=${KARCH} CROSS_COMPILE=${CROSS_COMPILE} savedefconfig
+
+         cp -f defconfig "${defconfig_file}"
+      done
+   done
+   export DEFCONFIG="${old_defconfig}"
+   export KARCH="${old_KARCH}"
+
+}
