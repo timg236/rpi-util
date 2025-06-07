@@ -191,6 +191,7 @@ function select-rt() {
 function select-kernel8() {
    export KERNEL_PLATFORM=bcm
    export KERNEL_VERSION=kernel8
+   export KERNEL=kernel8
    export DEFCONFIG=2711
    export KARCH=arm64
    export ARCH=arm64
@@ -201,6 +202,7 @@ function select-2712() {
    export KERNEL_PLATFORM=bcm
    export KERNEL_VERSION=2712
    export DEFCONFIG=2712
+   export KERNEL=kernel_2712
    export KARCH=arm64
    export ARCH=arm64
    select-kernel
