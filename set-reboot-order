@@ -1,0 +1,3 @@
+#!/bin/sh
+
+sudo vcmailbox 0x0003808b 4 4 $1
