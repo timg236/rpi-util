@@ -11,6 +11,7 @@ sudo apt install -y xterm
 cd $HOME
 
 cp -f "${script_dir}/.vimrc" "${HOME}"
+cp -f "${script_dir}/.tmux.conf" "${HOME}"
 mkdir -p "${HOME}/.vim/colors"
 cd "${HOME}/.vim/colors"
 if [ ! -f molokai.vim ]; then
