@@ -1,0 +1,5 @@
+#!/bin/sh
+
+sudo sh -c "echo 0 > /sys/class/rtc/rtc0/wakealarm"
+sudo sh -c "echo +${1} > /sys/class/rtc/rtc0/wakealarm"
+echo "RTC alarm set for $(date --date -@$(cat /sys/class/rtc/rtc0/wakealarm))"
