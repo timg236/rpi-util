@@ -17,6 +17,7 @@ alias ee='sudo EDITOR=vim rpi-eeprom-config --edit'
 alias bcmstat='\${HOME}/bcmstat/bcmstat.sh -o+v3d o+hevc -o+isp -o+isp -o+disp -t -e'
 alias S='. \$HOME/.bashrc'
 alias gg='git grep -n --color'
+alias gshow='git difftool HEAD~1..HEAD'
 alias hg='history | grep -i --color'
 alias l='git log --decorate --oneline --graph'
 bind -m vi-insert "\C-l":clear-screen
