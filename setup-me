@@ -84,6 +84,10 @@ function pico-upload()
    sudo openocd -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000" -c "program \$1 verify reset exit"
 }
 
+function ssh-attach() {
+   export SSH_AUTH_SOCK=\$(cat \${HOME}/.ssh_auth_sock)
+}
+
 if [ -f ~/.bash_crypto_mount ]; then
    export CRYPTO_MOUNT="\${HOME}/encrypted"
    export CRYPTO_IMAGE="\${HOME}/.encrypted.img"
@@ -101,6 +105,10 @@ if [ -d /proc/device-tree/chosen/bootloader ]; then
    vcgencmd get_mem arm
    vcgencmd get_mem gpu
 fi
+if [ -n "\${SSH_AUTH_SOCK}" ]; then
+   echo \${SSH_AUTH_SOCK} > \${HOME}/.ssh_auth_sock
+fi
+ssh-attach
 export PICO_SDK_PATH=\$HOME/pico-sdk
 export PATH=\$HOME/.venv/bin:\$PATH
 source ~/rpi-util/.bash_ssh_agent
