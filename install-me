@@ -29,11 +29,17 @@ if [ ! -e ~/.vim/bundle/Vundle.vim ]; then
 fi
 
 if [ "$1" = "pico" ]; then
+   cd $HOME
+   if [ "$2" = "clean" ]; then
+      rm -rf pico-sdk picoprobe pico-examples picotool pico-extras
+   fi
+   SDK_VERSION=2.2.0
    if [ ! -d pico-sdk ]; then
       git clone https://github.com/raspberrypi/pico-sdk
       cd pico-sdk
+      git checkout ${SDK_VERSION}
       git submodule init
-      git submodule update
+      git submodule update --recursive
       cd ..
    fi
 
@@ -43,10 +49,17 @@ if [ "$1" = "pico" ]; then
 
    if [ ! -d pico-examples ]; then
       git clone https://github.com/raspberrypi/pico-examples
+      git checkout sdk-${SDK_VERSION}
+   fi
+
+   if [ ! -d pico-extras ]; then
+      git clone git@github.com:raspberrypi/pico-extras.git
+      git checkout sdk-${SDK_VERSION}
    fi
 
    if [ ! -d picotool ]; then
       git clone https://github.com/raspberrypi/picotool
+      git checkout sdk-${SDK_VERSION}
       cd picotool
       sudo cp udev/99-picotool.rules /etc/udev/rules.d/
       mkdir build
@@ -55,5 +68,6 @@ if [ "$1" = "pico" ]; then
       make
       sudo make install
    fi
-   wget https://github.com/raspberrypi/picoprobe/releases/download/picoprobe-cmsis-v1.0.3/debugprobe.uf2
+   rm -f debugprobe.uf2
+   wget https://github.com/raspberrypi/debugprobe/releases/download/debugprobe-v2.2.3/debugprobe.uf2
 fi

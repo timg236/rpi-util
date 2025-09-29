@@ -20,6 +20,9 @@ alias gg='git grep -n --color'
 alias gshow='git difftool HEAD~1..HEAD'
 alias hg='history | grep -i --color'
 alias l='git log --decorate --oneline --graph'
+alias cmake-pico2_w='PICO_BOARD=pico2_w PICO_PLATFORM=rp2350 cmake'
+alias cmake-pico2='PICO_BOARD=pico2 PICO_PLATFORM=rp2350 cmake'
+alias cmake-pico='PICO_BOARD=pico PICO_PLATFORM=rp2040 cmake'
 bind -m vi-insert "\C-l":clear-screen
 export JOBS=8
 
