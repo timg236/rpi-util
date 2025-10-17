@@ -256,3 +256,4 @@ nmap <Leader>t :tabs<CR>
 "let $PATH .= '/home/tim/metaware/MetaWare/VideoCore/linux.x86'
 :set nofixendofline
 :set foldlevel=20
+:set mouse=
