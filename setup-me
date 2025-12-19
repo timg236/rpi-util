@@ -23,6 +23,7 @@ alias l='git log --decorate --oneline --graph'
 alias cmake-pico2_w='PICO_BOARD=pico2_w PICO_PLATFORM=rp2350 cmake'
 alias cmake-pico2='PICO_BOARD=pico2 PICO_PLATFORM=rp2350 cmake'
 alias cmake-pico='PICO_BOARD=pico PICO_PLATFORM=rp2040 cmake'
+alias p='cd \$PICO_SDK_PATH'
 bind -m vi-insert "\C-l":clear-screen
 export JOBS=8
 
