@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+cd $HOME
+if [ ! -d openocd ]; then
+   git clone  https://github.com/ntfreak/openocd.git
+   cd openocd/
+   ./bootstrap
+   ./configure --enable-cmsis-dap  --enable-internal-jimtcl
+   git submodule update --init
+   make -j8
+   sudo make install
+fi
