@@ -1,0 +1,41 @@
+#!/bin/sh
+
+script_dir=$(cd $(dirname $0) && pwd)
+
+cleanup() {
+   if [ -d "${TMP_DIR}" ];then
+      rm -rf "${TMP_DIR}"
+   fi
+}
+
+trap cleanup EXIT
+TMP_DIR="$(mktemp -d)"
+
+
+if [ "$1" = "attach" ]; then
+   shift
+   elf="${1}"
+   echo "GDB attach ${elf}"
+   cat > "${TMP_DIR}/gdb-init" <<EOF
+set architecture armv8-m.main
+target remote ${PICO_GDB_HOST}
+file "${elf}"
+break main
+monitor reset init
+continue
+EOF
+else
+   elf="${1}"
+   echo "GDB load ${elf}"
+   cat > "${TMP_DIR}/gdb-init" <<EOF
+set architecture armv8-m.main
+target remote ${PICO_GDB_HOST}
+load
+break main
+monitor reset init
+continue
+EOF
+fi
+
+cat "${TMP_DIR}/gdb-init"
+gdb-multiarch -x "${TMP_DIR}/gdb-init" "${@}"

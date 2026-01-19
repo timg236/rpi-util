@@ -1,4 +1,0 @@
-target remote tim-pi5-trixie:3333
-monitor reset init
-load
-continue
