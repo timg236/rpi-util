@@ -89,6 +89,9 @@ function pico-upload()
 }
 
 function ssh-attach() {
+   if [ -e "\${SSH_AUTH_SOCK}" ]; then
+      echo \${SSH_AUTH_SOCK} > \${HOME}/.ssh_auth_sock
+   fi
    export SSH_AUTH_SOCK=\$(cat \${HOME}/.ssh_auth_sock)
 }
 
@@ -108,9 +111,6 @@ if [ -d /proc/device-tree/chosen/bootloader ]; then
    vcgencmd get_config arm_freq
    vcgencmd get_mem arm
    vcgencmd get_mem gpu
-fi
-if [ -n "\${SSH_AUTH_SOCK}" ]; then
-   echo \${SSH_AUTH_SOCK} > \${HOME}/.ssh_auth_sock
 fi
 ssh-attach
 export PICO_SDK_PATH=\$HOME/pico-sdk
