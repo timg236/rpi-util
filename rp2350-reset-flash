@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+openocd -f interface/cmsis-dap.cfg -f target/rp2350.cfg -c "init; reset halt; flash erase_sector 0 0 last; reset; exit"
