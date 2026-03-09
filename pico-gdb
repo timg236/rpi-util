@@ -1,6 +1,12 @@
 #!/bin/sh
 
+set -e
+set -u
+set -x
+
 script_dir=$(cd $(dirname $0) && pwd)
+
+DEBUG_ELF=""
 
 cleanup() {
    if [ -d "${TMP_DIR}" ];then
@@ -8,25 +14,39 @@ cleanup() {
    fi
 }
 
+find_elf() {
+   name=$1
+   if [ -f "${name}" ]; then
+      DEBUG_ELF="${1}"
+   else
+      DEBUG_ELF="$(find . -name "${1}.elf" | head -n1)"
+   fi
+   if [ -f "${DEBUG_ELF}" ]; then
+      echo "Loading ${DEBUG_ELF}"
+   else
+      echo "Unable to find elf for ${1}"
+      exit 1
+   fi
+}
+
 trap cleanup EXIT
 TMP_DIR="$(mktemp -d)"
 
-
 if [ "$1" = "attach" ]; then
    shift
-   elf="${1}"
-   echo "GDB attach ${elf}"
+   find_elf "${1}"
+   echo "GDB attach ${DEBUG_ELF}"
    cat > "${TMP_DIR}/gdb-init" <<EOF
 set architecture armv8-m.main
 target remote ${PICO_GDB_HOST}
-file "${elf}"
+file "${DEBUG_ELF}"
 break main
 monitor reset init
 continue
 EOF
 else
-   elf="${1}"
-   echo "GDB load ${elf}"
+   find_elf "${1}"
+   echo "GDB load ${DEBUG_ELF}"
    cat > "${TMP_DIR}/gdb-init" <<EOF
 set architecture armv8-m.main
 target remote ${PICO_GDB_HOST}
