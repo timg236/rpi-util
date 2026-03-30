@@ -58,4 +58,5 @@ EOF
 fi
 
 cat "${TMP_DIR}/gdb-init"
-gdb-multiarch -x "${TMP_DIR}/gdb-init" "${@}"
+shift
+gdb-multiarch -x "${TMP_DIR}/gdb-init" "${DEBUG_ELF}" "${@}"
