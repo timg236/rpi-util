@@ -25,6 +25,7 @@ alias cmake-pico2='PICO_BOARD=pico2 PICO_PLATFORM=rp2350 cmake'
 alias cmake-pico='PICO_BOARD=pico PICO_PLATFORM=rp2040 cmake'
 alias p='cd \$PICO_SDK_PATH'
 bind -m vi-insert "\C-l":clear-screen
+set -o vi
 export JOBS=8
 
 function bless-pi() {
@@ -143,3 +144,5 @@ export BASE_PATH=\${PATH}:$\{HOME}/bin
 . \${HOME}/.bash_user_extras
 EOF
 fi
+
+set -o vi
