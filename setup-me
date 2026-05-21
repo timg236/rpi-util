@@ -118,6 +118,9 @@ export PATH=\$HOME/.venv/bin:\$PATH
 source ~/rpi-util/.bash_ssh_agent
 source ~/rpi-util/.bash_kernel
 source ~/rpi-util/.bash_git
+if [ -f ~/pidev/.bash_pidev ]; then
+   . ~/pidev/.bash_pidev
+fi
 if [ -f /boot/firmware/reboot ]; then
    count=\$(cat \${HOME}/reboot-count)
    count=\$((count + 1))
@@ -136,6 +139,7 @@ fi
 
 if ! grep -q ".bash_user_extras" "${HOME}/.bashrc"; then
 cat <<EOF >> "${HOME}/.bashrc"
+export BASE_PATH=\${PATH}:$\{HOME}/bin
 . \${HOME}/.bash_user_extras
 EOF
 fi
