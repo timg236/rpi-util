@@ -9,7 +9,7 @@ sudo apt install -y git bc bison flex libssl-dev make build-essential time
 
 cd ${HOME}
 if [ ! -d kbuild ]; then
-   git clone --depth=1 --branch rpi-6.1.y https://github.com/raspberrypi/linux kbuild
+   git clone --depth=1 --branch rpi-6.18.y https://github.com/raspberrypi/linux kbuild
 fi
 
 count=0
