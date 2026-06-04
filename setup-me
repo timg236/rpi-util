@@ -24,6 +24,7 @@ alias cmake-pico2_w='PICO_BOARD=pico2_w PICO_PLATFORM=rp2350 cmake'
 alias cmake-pico2='PICO_BOARD=pico2 PICO_PLATFORM=rp2350 cmake'
 alias cmake-pico='PICO_BOARD=pico PICO_PLATFORM=rp2040 cmake'
 alias p='cd \$PICO_SDK_PATH'
+alias apt-update='sudo apt update && apt list --upgradable'
 bind -m vi-insert "\C-l":clear-screen
 set -o vi
 export JOBS=8
