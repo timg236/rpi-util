@@ -7,7 +7,6 @@ cp -f "${script_dir}/.bash_ssh_agent" $HOME
 cat <<EOF > "${HOME}/.bash_user_extras"
 set editing-mode vi
 export EDITOR=vim
-export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin:\${HOME}/.local/bin:\$HOME/.venv/bin
 export BR2_DL_DIR=\${HOME}/buildroot-dl
 alias k='select-kernel'
 alias s='git status'
@@ -119,11 +118,13 @@ export PICO_SDK_PATH=\$HOME/pico-sdk
 source ~/rpi-util/.bash_ssh_agent
 source ~/rpi-util/.bash_kernel
 source ~/rpi-util/.bash_git
-if [ -f ~/pidev/.bash_pidev ]; then
-   . ~/pidev/.bash_pidev
-fi
 if [ -f ~/.venv/bin/activate ]; then
    . ~/.venv/bin/activate
+fi
+export PATH=\${PATH}:\${HOME}/bin:\${HOME}/rpi-util:/usr/local/bin:\${HOME}/.local/bin:\$HOME/.venv/bin
+export BASE_PATH=\$PATH
+if [ -f ~/pidev/.bash_pidev ]; then
+   . ~/pidev/.bash_pidev
 fi
 if [ -f ~/rpi-util/.bash_powerline ]; then
    . ~/rpi-util/.bash_powerline
