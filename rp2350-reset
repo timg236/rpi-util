@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+# If an OpenOCD server is already running (e.g. pico-debug-server) it owns the
+# debug probe, so a second instance fails with "could not claim interface".
+# Reset through the server's telnet port instead.
+if pgrep -x openocd > /dev/null; then
+    echo "reset run" | nc -q 1 localhost 4444 > /dev/null
+else
+    openocd -f interface/cmsis-dap.cfg -f target/rp2350.cfg \
+        -c "adapter speed 5000" -c "init; reset run; exit"
+fi
