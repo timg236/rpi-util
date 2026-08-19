@@ -1,0 +1,1 @@
+no_console_suspend pm_debug_messages ignore_loglevel initcall_debug loglevel=8

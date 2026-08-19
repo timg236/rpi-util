@@ -1,4 +1,2 @@
 #!/bin/sh
-
-echo mem > /sys/power/state
 systemctl suspend
