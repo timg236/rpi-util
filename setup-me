@@ -92,6 +92,12 @@ function pico-upload()
    sudo openocd -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000" -c "program \$1 verify reset exit"
 }
 
+function pico-host-build()
+{
+   cmake -B build-host -S . -DPICO_PLATFORM=host
+   cmake --build build-host
+}
+
 function ssh-attach() {
    if [ -e "\${SSH_AUTH_SOCK}" ]; then
       echo \${SSH_AUTH_SOCK} > \${HOME}/.ssh_auth_sock
