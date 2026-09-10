@@ -1,0 +1,42 @@
+#!/bin/sh
+# S2RAM soak test: 30 short cycles then 10 five minute cycles with a RAM
+# pattern check for self-refresh corruption. Stops on the first failure.
+
+script_dir=$(cd $(dirname $0) && pwd)
+log=$HOME/s2ram-soak.log
+pattern=/dev/shm/s2ram-pattern
+count=0
+
+msg() {
+	echo "$(date "+%F %T") $*" | tee -a $log
+	sync
+}
+
+head -c 1G /dev/urandom > $pattern
+sum=$(sha256sum < $pattern)
+msg "start $(vcgencmd version | tail -1) pattern $sum"
+
+while [ $count -lt 40 ]; do
+	if [ $count -lt 30 ]; then
+		t=30
+	else
+		t=300
+	fi
+	start=$(date +%s)
+	msg "iteration $count suspend ${t}s"
+	msg "$($script_dir/wake-after $t)"
+	$script_dir/rpi-suspend
+	sleep 10
+	elapsed=$(($(date +%s) - start))
+	if [ "$(sha256sum < $pattern)" != "$sum" ]; then
+		msg "iteration $count FAIL corrupt after ${elapsed}s"
+		exit 1
+	fi
+	if [ $elapsed -gt $((t + 60)) ]; then
+		msg "iteration $count FAIL late wake after ${elapsed}s"
+		exit 1
+	fi
+	msg "iteration $count resume ok after ${elapsed}s"
+	count=$((count + 1))
+done
+msg "done $count iterations"
