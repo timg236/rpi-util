@@ -107,7 +107,6 @@ function deploy-kernel()
    (
     set -e
     pi_addr="${PI_ADDR}"
-    bless-pi
     cd $HOME/linux-${KERNEL_VERSION}
     if [ -n "${pi_addr}" ]; then
         if false; then
