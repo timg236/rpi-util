@@ -24,7 +24,7 @@ function select-kernel()
    else
       export CROSS_COMPILE=aarch64-linux-gnu-
       export KIMAGE=Image
-      if [ "${KERNEL_VERSION}" = 2712 ] || [ "${DEFCONFIG}" = 2712 ]; then
+      if [ "${DEFCONFIG}" = 2712 ]; then
          export KERNEL=kernel_2712
       else
          export KERNEL=${KERNEL:-kernel8}
@@ -190,6 +190,16 @@ function select-rt() {
 function select-kernel8() {
    export KERNEL_PLATFORM=bcm
    export KERNEL_VERSION=kernel8
+   export KERNEL=kernel8
+   export DEFCONFIG=2711
+   export KARCH=arm64
+   export ARCH=arm64
+   select-kernel
+}
+
+function select-kernel-7.1() {
+   export KERNEL_PLATFORM=bcm
+   export KERNEL_VERSION=kernel-7.1
    export KERNEL=kernel8
    export DEFCONFIG=2711
    export KARCH=arm64
