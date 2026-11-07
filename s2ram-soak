@@ -16,9 +16,9 @@ head -c 1G /dev/urandom > $pattern
 sum=$(sha256sum < $pattern)
 msg "start $(vcgencmd version | tail -1) pattern $sum"
 
-while [ $count -lt 40 ]; do
-	if [ $count -lt 30 ]; then
-		t=30
+while [ $count -lt 400 ]; do
+	if [ $count -lt 300 ]; then
+		t=10
 	else
 		t=300
 	fi
@@ -26,7 +26,7 @@ while [ $count -lt 40 ]; do
 	msg "iteration $count suspend ${t}s"
 	msg "$($script_dir/wake-after $t)"
 	$script_dir/rpi-suspend
-	sleep 10
+	sleep 5
 	elapsed=$(($(date +%s) - start))
 	if [ "$(sha256sum < $pattern)" != "$sum" ]; then
 		msg "iteration $count FAIL corrupt after ${elapsed}s"
