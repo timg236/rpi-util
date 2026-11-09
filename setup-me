@@ -114,13 +114,10 @@ fi
 if [ -d /proc/device-tree/chosen/bootloader ]; then
    uname -a
    grep Serial /proc/cpuinfo
-   vcgencmd bootloader_version | grep version
-   vcgencmd version | grep version
+   grep Revision /proc/cpuinfo
+   rpi-bootloader-version
    vcgencmd measure_temp
    vcgencmd measure_volts
-   vcgencmd get_config arm_freq
-   vcgencmd get_mem arm
-   vcgencmd get_mem gpu
 fi
 ssh-attach
 export PICO_SDK_PATH=\$HOME/pico-sdk
