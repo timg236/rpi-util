@@ -1,10 +1,12 @@
 #!/bin/sh
 # S2RAM soak test: 30 short cycles then 10 five minute cycles with a RAM
-# pattern check for self-refresh corruption. Stops on the first failure.
+# pattern check for self-refresh corruption. Checks that google.com is
+# reachable within 15s of resume. Stops on the first failure.
 
 script_dir=$(cd $(dirname $0) && pwd)
 log=$HOME/s2ram-soak.log
 pattern=/dev/shm/s2ram-pattern
+stats=/sys/power/suspend_stats/success
 count=0
 
 msg() {
@@ -25,8 +27,25 @@ while [ $count -lt 400 ]; do
 	start=$(date +%s)
 	msg "iteration $count suspend ${t}s"
 	msg "$($script_dir/wake-after $t)"
+	n=$(cat $stats)
 	$script_dir/rpi-suspend
-	sleep 5
+	# systemctl suspend returns before the suspend happens
+	while [ $(cat $stats) -eq $n ]; do
+		if [ $(($(date +%s) - start)) -gt $((t + 60)) ]; then
+			msg "iteration $count FAIL no suspend/resume"
+			exit 1
+		fi
+		sleep 0.2
+	done
+	resumed=$(date +%s)
+	until ping -c 1 -W 1 google.com > /dev/null 2>&1; do
+		if [ $(($(date +%s) - resumed)) -ge 15 ]; then
+			msg "iteration $count FAIL no network 15s after resume"
+			exit 1
+		fi
+		sleep 1
+	done
+	net=$(($(date +%s) - resumed))
 	elapsed=$(($(date +%s) - start))
 	if [ "$(sha256sum < $pattern)" != "$sum" ]; then
 		msg "iteration $count FAIL corrupt after ${elapsed}s"
@@ -36,7 +55,7 @@ while [ $count -lt 400 ]; do
 		msg "iteration $count FAIL late wake after ${elapsed}s"
 		exit 1
 	fi
-	msg "iteration $count resume ok after ${elapsed}s"
+	msg "iteration $count resume ok after ${elapsed}s network ${net}s"
 	count=$((count + 1))
 done
 msg "done $count iterations"
